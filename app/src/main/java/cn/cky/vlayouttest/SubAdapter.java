@@ -6,6 +6,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.OvershootInterpolator;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alibaba.android.vlayout.DelegateAdapter;
 import com.alibaba.android.vlayout.LayoutHelper;
@@ -23,15 +27,21 @@ public class SubAdapter extends DelegateAdapter.Adapter<SubAdapter.MainViewHolde
     private ItemBean itemBean;
     private int mCount = 0;
     RecyclerView.RecycledViewPool viewPool;
+    OnItemFocusListener onItemFocusListener;
+
+    public interface OnItemFocusListener{
+        void itemFoucs(View view,View view1,boolean hasFocus);
+    }
 
 
-    public SubAdapter(Context mContext,LayoutHelper mLayoutHelper,VirtualLayoutManager.LayoutParams mLayoutParams,int count,ItemBean itemBean,RecyclerView.RecycledViewPool viewPool){
+    public SubAdapter(Context mContext, LayoutHelper mLayoutHelper, VirtualLayoutManager.LayoutParams mLayoutParams, int count, ItemBean itemBean, RecyclerView.RecycledViewPool viewPool,OnItemFocusListener onItemFocusListener){
         this.mContext = mContext;
         this.mLayoutHelper = mLayoutHelper;
         this.mLayoutParams = mLayoutParams;
         this.mCount = count;
         this.itemBean = itemBean;
         this.viewPool = viewPool;
+        this.onItemFocusListener = onItemFocusListener;
     }
 
 
@@ -48,25 +58,50 @@ public class SubAdapter extends DelegateAdapter.Adapter<SubAdapter.MainViewHolde
         if (viewType == TypeUtils.BANNER_TYPE){
             mainViewHolder = new MainViewHolder(LayoutInflater.from(mContext).inflate(R.layout.view_pager, parent, false));
         }else if (viewType == TypeUtils.TITEL_TYPE){
-
+            mainViewHolder = new MainViewHolder(LayoutInflater.from(mContext).inflate(R.layout.title_layout, parent, false));
         }else if (viewType == TypeUtils.CONNECT_TYPE){
-
+            mainViewHolder = new MainViewHolder(LayoutInflater.from(mContext).inflate(R.layout.content_item_layout, parent, false));
         }else {
-
+            mainViewHolder = new MainViewHolder(LayoutInflater.from(mContext).inflate(R.layout.content_item_layout, parent, false));
         }
         return mainViewHolder;
     }
 
     @Override
-    public void onBindViewHolder(MainViewHolder holder, int position) {
-        holder.itemView.setLayoutParams(new VirtualLayoutManager.LayoutParams(mLayoutParams));
+    public void onBindViewHolder(MainViewHolder holder, final int position) {
+
+        VirtualLayoutManager.LayoutParams layoutParams = new VirtualLayoutManager.LayoutParams(mLayoutParams);
+        layoutParams.setMargins(10,5,10,5);
+        holder.itemView.setLayoutParams(layoutParams);
 
         if (itemBean.getType().equals(TypeUtils.BANNER)){
             if (holder.itemView instanceof ViewPager) {
-                ViewPager viewPager = (ViewPager) holder.itemView;
+                final ViewPager viewPager = (ViewPager) holder.itemView;
                 viewPager.setAdapter(new PagerAdapter(this,viewPool));
+                viewPager.setCurrentItem(1);
             }
+        }else if (itemBean.getType().equals(TypeUtils.TITLE)){
+            ((TextView)(holder.itemView.findViewById(R.id.title))).setText(itemBean.getTitle()+"");
+        }else {
+            final ImageView imageView = ((ImageView)(holder.itemView.findViewById(R.id.img)));
+            if (null == itemBean.getData()){
+                imageView.setImageResource(R.mipmap.one);
+            }else {
+                imageView.setImageResource(itemBean.getData()[position]);
+            }
+
+            holder.itemView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(final View v, boolean hasFocus) {
+                    if (onItemFocusListener!=null){
+                        onItemFocusListener.itemFoucs(v,imageView,hasFocus);
+                    }
+                }
+            });
+
         }
+
+
 
     }
 

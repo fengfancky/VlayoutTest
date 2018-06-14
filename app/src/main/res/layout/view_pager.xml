@@ -27,7 +27,10 @@
     android:id="@+id/pager"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="280dp">
+    android:layout_height="280dp"
+    android:paddingLeft="50dp"
+    android:paddingRight="50dp"
+    android:clipToPadding="false">
 
 
 </android.support.v4.view.ViewPager>

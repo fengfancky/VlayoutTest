@@ -9,6 +9,7 @@ public class ItemBean {
     private String title;
     private int count;
     private String type;
+    private int[] data;
 
     public String getTitle() {
         return title;
@@ -32,5 +33,13 @@ public class ItemBean {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public int[] getData() {
+        return data;
+    }
+
+    public void setData(int[] data) {
+        this.data = data;
     }
 }
