@@ -33,6 +33,8 @@ public class SubAdapter extends DelegateAdapter.Adapter<SubAdapter.MainViewHolde
     OnItemFocusListener onItemFocusListener;
     BannerScrollListener bannerScrollListener;
 
+    private boolean scrolling = false;
+
     public interface BannerScrollListener{
         void scroll(ViewPager viewPager,ItemBean itemBean);
     }
@@ -41,6 +43,13 @@ public class SubAdapter extends DelegateAdapter.Adapter<SubAdapter.MainViewHolde
         void itemFoucs(View view,View view1,boolean hasFocus);
     }
 
+    public boolean isScrolling() {
+        return scrolling;
+    }
+
+    public void setScrolling(boolean scrolling) {
+        this.scrolling = scrolling;
+    }
 
     public void setBannerScrollListener(BannerScrollListener bannerScrollListener) {
         this.bannerScrollListener = bannerScrollListener;
@@ -89,7 +98,6 @@ public class SubAdapter extends DelegateAdapter.Adapter<SubAdapter.MainViewHolde
         if (itemBean.getType().equals(TypeUtils.BANNER)){
 
             ViewPager viewPager = (ViewPager) holder.itemView;
-
             viewPager.setAdapter(new PagerAdapter(mContext,this,viewPool,itemBean));
             viewPager.setCurrentItem(2);
             try {
@@ -107,18 +115,24 @@ public class SubAdapter extends DelegateAdapter.Adapter<SubAdapter.MainViewHolde
             }
 
         }else if (itemBean.getType().equals(TypeUtils.TITLE)){
+
             ((TextView)(holder.itemView.findViewById(R.id.title))).setText(itemBean.getTitle()+"");
+
         }else {
             final ImageView imageView = ((ImageView)(holder.itemView.findViewById(R.id.img)));
-            if (null == itemBean.getData()){
-                Glide.with(mContext)
-                        .load(R.mipmap.one)
-                        .into(imageView);
-            }else {
-                Glide.with(mContext)
-                        .load(itemBean.getData()[position])
-                        .into(imageView);
+            if (scrolling){
+                if (null == itemBean.getData()){
+                    Glide.with(mContext)
+                            .load(R.mipmap.one)
+                            .into(imageView);
+                }else {
+
+                    Glide.with(mContext)
+                            .load(itemBean.getData()[position])
+                            .into(imageView);
+                }
             }
+
 
             holder.itemView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                 @Override
