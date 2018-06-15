@@ -6,14 +6,17 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.OvershootInterpolator;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
+import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.alibaba.android.vlayout.DelegateAdapter;
 import com.alibaba.android.vlayout.LayoutHelper;
 import com.alibaba.android.vlayout.VirtualLayoutManager;
+import com.bumptech.glide.Glide;
+
+import java.lang.reflect.Field;
 
 /**
  * Created by office on 2018/6/13.
@@ -28,13 +31,22 @@ public class SubAdapter extends DelegateAdapter.Adapter<SubAdapter.MainViewHolde
     private int mCount = 0;
     RecyclerView.RecycledViewPool viewPool;
     OnItemFocusListener onItemFocusListener;
+    BannerScrollListener bannerScrollListener;
+
+    public interface BannerScrollListener{
+        void scroll(ViewPager viewPager,ItemBean itemBean);
+    }
 
     public interface OnItemFocusListener{
         void itemFoucs(View view,View view1,boolean hasFocus);
     }
 
 
-    public SubAdapter(Context mContext, LayoutHelper mLayoutHelper, VirtualLayoutManager.LayoutParams mLayoutParams, int count, ItemBean itemBean, RecyclerView.RecycledViewPool viewPool,OnItemFocusListener onItemFocusListener){
+    public void setBannerScrollListener(BannerScrollListener bannerScrollListener) {
+        this.bannerScrollListener = bannerScrollListener;
+    }
+
+    public SubAdapter(Context mContext, LayoutHelper mLayoutHelper, VirtualLayoutManager.LayoutParams mLayoutParams, int count, ItemBean itemBean, RecyclerView.RecycledViewPool viewPool, OnItemFocusListener onItemFocusListener){
         this.mContext = mContext;
         this.mLayoutHelper = mLayoutHelper;
         this.mLayoutParams = mLayoutParams;
@@ -75,19 +87,37 @@ public class SubAdapter extends DelegateAdapter.Adapter<SubAdapter.MainViewHolde
         holder.itemView.setLayoutParams(layoutParams);
 
         if (itemBean.getType().equals(TypeUtils.BANNER)){
-            if (holder.itemView instanceof ViewPager) {
-                final ViewPager viewPager = (ViewPager) holder.itemView;
-                viewPager.setAdapter(new PagerAdapter(this,viewPool));
-                viewPager.setCurrentItem(1);
+
+            ViewPager viewPager = (ViewPager) holder.itemView;
+
+            viewPager.setAdapter(new PagerAdapter(mContext,this,viewPool,itemBean));
+            viewPager.setCurrentItem(2);
+            try {
+                Field field = ViewPager.class.getDeclaredField("mScroller");
+                field.setAccessible(true);
+                FixedSpeedScroller scroller = new FixedSpeedScroller(viewPager.getContext(), new AccelerateDecelerateInterpolator());
+                field.set(viewPager, scroller);
+                scroller.setmDuration(500);
+            } catch (Exception e) {
+
             }
+
+            if (bannerScrollListener != null){
+                bannerScrollListener.scroll(viewPager,itemBean);
+            }
+
         }else if (itemBean.getType().equals(TypeUtils.TITLE)){
             ((TextView)(holder.itemView.findViewById(R.id.title))).setText(itemBean.getTitle()+"");
         }else {
             final ImageView imageView = ((ImageView)(holder.itemView.findViewById(R.id.img)));
             if (null == itemBean.getData()){
-                imageView.setImageResource(R.mipmap.one);
+                Glide.with(mContext)
+                        .load(R.mipmap.one)
+                        .into(imageView);
             }else {
-                imageView.setImageResource(itemBean.getData()[position]);
+                Glide.with(mContext)
+                        .load(itemBean.getData()[position])
+                        .into(imageView);
             }
 
             holder.itemView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -100,8 +130,6 @@ public class SubAdapter extends DelegateAdapter.Adapter<SubAdapter.MainViewHolde
             });
 
         }
-
-
 
     }
 

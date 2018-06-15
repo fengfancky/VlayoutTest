@@ -1,5 +1,6 @@
 package cn.cky.vlayouttest;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import android.widget.TextView;
 
 import com.alibaba.android.vlayout.RecyclablePagerAdapter;
 import com.alibaba.android.vlayout.VirtualLayoutManager;
+import com.bumptech.glide.Glide;
 
 /**
  * Created by office on 2018/6/13.
@@ -16,13 +18,18 @@ import com.alibaba.android.vlayout.VirtualLayoutManager;
 
 public class PagerAdapter extends RecyclablePagerAdapter<SubAdapter.MainViewHolder> {
 
-    public PagerAdapter(SubAdapter adapter, RecyclerView.RecycledViewPool pool) {
+    private Context context;
+    private ItemBean itemBean;
+
+    public PagerAdapter( Context context,SubAdapter adapter, RecyclerView.RecycledViewPool pool,ItemBean itemBean) {
         super(adapter, pool);
+        this.context = context;
+        this.itemBean = itemBean;
     }
 
     @Override
     public int getCount() {
-        return 3;
+        return 5;
     }
 
     @Override
@@ -30,9 +37,14 @@ public class PagerAdapter extends RecyclablePagerAdapter<SubAdapter.MainViewHold
         // only vertical
         viewHolder.itemView.setLayoutParams(new VirtualLayoutManager.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-        int[] res = new int[]{R.mipmap.mountain,R.mipmap.sunset,R.mipmap.landscape};
+//        int[] res = new int[]{R.mipmap.mountain,R.mipmap.sunset,R.mipmap.sunrise,R.mipmap.snow,R.mipmap.huangshan,};
         final ImageView imageView = ((ImageView) viewHolder.itemView.findViewById(R.id.img));
-        imageView.setImageResource(res[position]);
+
+        Glide.with(context)
+                .load(itemBean.getData()[position])
+                .into(imageView);
+
+//        imageView.setImageResource(res[position]);
 
         viewHolder.itemView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override

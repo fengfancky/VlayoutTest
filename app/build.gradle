@@ -40,4 +40,5 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:25.2.0'
     implementation project(':vlayout')
     implementation (name: 'androidtvwidget-release', ext: 'aar')
+    implementation 'com.github.bumptech.glide:glide:3.7.0'
 }
